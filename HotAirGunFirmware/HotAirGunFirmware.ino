@@ -59,7 +59,7 @@ void loop() {
 		char incomingByte = Serial.read();
 		incomingByte=constrain(incomingByte,48,57);
 		outVal=map(incomingByte,48,57,0,100);
-		Serial.print(F(": I = "));
+		Serial.print(F("I = "));
 		Serial.print(incomingByte);
 		Serial.print(F(", O = "));
 		Serial.println(outVal);
