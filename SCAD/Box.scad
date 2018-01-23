@@ -1,10 +1,27 @@
-$fn=20;
-
-//translate([-3.5,6,-25])color("GRAY")ACDC24V();
+$fn=50;
 
 //Box();
-    
-translate([0,10,-10.75])middlePlate();
+
+/*
+difference(){
+    translate([0,10,-10.75])middlePlate();
+    translate([8.3,-29.8,0]){
+        cylinder(d=2,h=30,center=true);
+        translate([0,0,-11.5])cylinder(d1=5,d2=2,h=2,center=true);
+    }
+    translate([-8.3,-29.8,0]){
+        cylinder(d=2,h=30,center=true);
+        translate([0,0,-11.5])cylinder(d1=5,d2=2,h=2,center=true);
+    }
+    translate([0,29,0])cylinder(d=2,h=11.8,center=true);
+    translate([0.1,0,-0.3])Box();
+    translate([-0.1,0,-0.3])Box();
+    translate([0,-0.1,-0.3])Box();
+    //translate([0,0.1,-0.3])Box();
+}
+*/
+translate([0,10,-26])bottomPart();
+//translate([-3.5,6,-25])color("GRAY")ACDC24V();
 
 module Box(){
 difference(){
@@ -12,10 +29,8 @@ difference(){
         difference(){
             union(){
                 generalBox(21.5,64.5,21,4);
-                //translate([-17,-18.5,0])generalBox(20,35,21,3);
             }
             translate([0,0,-0.7])generalBox(19,62,20,2.6);
-            //translate([-17,-18,-0.7])generalBox(18,32,20,1.6);
 
             // cutout for PowerJack
             translate([-17,-11,0.5])rotate([90,0,0])cylinder(d=11,h=30);
@@ -83,24 +98,24 @@ module case_mountinghole(){
             cylinder(d=4, h=10, center=true);
             translate([0,-2,0])cube([4,2,10], center=true);
         }
-        translate([0,0,3])cylinder(d=2, h=8, center=true);
+        translate([0,0,3])cylinder(d=1.8, h=9, center=true);
         translate([0,2,-8])rotate([45,0,0])cube([15,15,10], center=true);
     }
 }
 
 module case_mountinghole_corner(){
-    rotate([0,180,0])difference(){
-        hull(){
-            cylinder(d=4, h=10, center=true);
-            translate([0,-1,0])cube([4,2,10], center=true);
-            translate([-1,0,0])cube([2,4,10], center=true);
-        }
-        translate([0,0,3])cylinder(d=2, h=8, center=true);
-        translate([0,2,-8])rotate([45,0,-45])cube([15,15,10], center=true);
-        // cut the corner
-        translate([-2,-2,0])rotate([0,0,-45])cube([4,2,11], center=true);
-    }
-}
+     rotate([0,180,0])difference(){
+         hull(){
+             cylinder(d=4, h=10, center=true);
+             translate([0,-1,0])cube([4,2,10], center=true);
+             translate([-1,0,0])cube([2,4,10], center=true);
+         }
+         translate([0,0,3])cylinder(d=1.8, h=8, center=true);
+         translate([0,2,-8])rotate([45,0,-45])cube([15,15,10], center=true);
+         // cut the corner
+         translate([-2,-2,0])rotate([0,0,-45])cube([4,2,11], center=true);
+     }
+ }
 
 module DCDC_cover_part(x,y){
     hull(){
@@ -112,13 +127,34 @@ module DCDC_cover_part(x,y){
 module middlePlate(){
     difference(){
         union(){
-            translate([0,0,0])cube([36+7+2,87+2,1.5], center=true);
+            translate([0,0,-0.5])generalBox(36+7+2,87+2,1.5,3);
             translate([-43/2,-8,0])DCDC_cover_part(43,50);
+            
         }
-        translate([-43/2+1.5,-8+1.5,-1])DCDC_cover_part(40,47);
+        translate([-43/2+1.5,-8+1.5,-1])DCDC_cover_part(40,46);
         translate([0,2,5.2+0.6])cube([17,30,2],center=true);
+
+        translate([18,42,5.75])cylinder(d=4,h=10, center=true);
+        translate([-18,42,5.75])cylinder(d=4,h=10, center=true);
+
+        translate([18,42,0])cylinder(d=2,h=10, center=true);
+        translate([-18,42,0])cylinder(d=2,h=10, center=true);
+        translate([18,-42,0])cylinder(d=2,h=10, center=true);
     }
-    
+    //translate([-43/2,40,0])cube([3,3,3],center=true);
+}
+
+module bottomPart(){
+    difference(){
+        translate([0,0,0])generalBox(36+7+2+1.5,87+2+1.5,29,4);
+        translate([0,0,1])generalBox(36+7,87,29,2);
+        translate([0,0,14.8])generalBox(36+7+2+0.3,87+2+0.3,2,3);
+        translate([-3.5,-50,1])cube([25,20,15],center=true);
+        translate([16,50,0])rotate([90,0,0])cylinder(d=5.5,h=30);
+    }
+    translate([18,42,9.1])rotate([180,0,0])case_mountinghole();
+    translate([-18,42,9.1])rotate([180,0,0])case_mountinghole();
+    translate([18,-42,9.1])rotate([180,0,180])case_mountinghole();
 }
 
 module ACDC24V(){
