@@ -18,7 +18,7 @@ char rotaryEncRead() {
 
 void INT_doEncoder() {
     // If interrupts come faster than 5ms, assume it's a bounce and ignore
-    if (millis() - encodermillis > 5) {
+    if (mmillis() - encodermillis > 5) {
         if (!digitalRead(encoderPinB))
             encoderPos++;
         else
@@ -26,21 +26,21 @@ void INT_doEncoder() {
 
 		has_encoderChange = HIGH;
         }
-    encodermillis = millis();
+    encodermillis = mmillis();
 }
 
 // determine if rotary encoder was pressed longer than 2 seconds
 bool is_rotaryEncLongPress() {
 	 if(digitalRead(BUTTON_PIN)){
 		 // button is not pressed
-		 encoderLongPressmillis=millis();
+		 encoderLongPressmillis=mmillis();
 	 }else{
 		 // button is pressed
 		 // how long?
-		 if((encoderLongPressmillis+2000)<millis()){
+		 if((encoderLongPressmillis+2000)<mmillis()){
 			 // Long press engaged
 			 return true;
-			 encoderLongPressmillis=millis();	// reset counter
+			 encoderLongPressmillis=mmillis();	// reset counter
 		 }
 	 }
 	 return false;
@@ -49,5 +49,5 @@ bool is_rotaryEncLongPress() {
 void waitUntilButtonReleased(){
 	// wait until button is depressed
 	while(rotaryEncRead() == 127){}
-	delay(50); // wait for noise is gone from button contacts
+	mdelay(50); // wait for noise is gone from button contacts
 }
