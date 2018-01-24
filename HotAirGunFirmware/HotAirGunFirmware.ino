@@ -23,6 +23,10 @@
 
 #include <U8g2lib.h>
 #include "encoder.h"
+#include <EEPROM.h>
+#include "eeprom.h"
+#include <avr/wdt.h>
+
 
 
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0);
@@ -44,14 +48,21 @@ int pid_P, pid_I, pid_D; // PID values
 
 
 void setup() {
+	wdt_disable();
 	//Heater Off
 	H_OFF;
 	pinMode(HEATER_PIN, OUTPUT);
 	//Duct is Off
-	analogWrite(FAN_PIN,0);
+	analogWrite(FAN_PIN,fanSpeed);
 	
 	initEncoder();
-	
+
+	// check, if button was pressed while power on (or after reset), then enter to Config mode
+	if (rotaryEncRead() == 127){
+		// go to config menu
+		configureParams();
+	}
+
 	//Serial.begin(115200);
 
 	MAX31855_init();
@@ -60,23 +71,31 @@ void setup() {
 	u8g2.setDrawColor(2);	// Xor is default mode across all sketch.
 	u8g2.setFontMode(1);	// Or is default mode
 
-	  // now mess the timer (millis will be x8 faster)
-	  // to prevent audible noise from PWM
-	  // TCCR0B = TCCR0B & 0b11111000 | 0x03; //x64 - default timer speed
-	  TCCR0B = TCCR0B & 0b11111000 | 0x02; // x8
-	  
-	  #ifdef DEBUG
-	  analogWrite(FAN_PIN,255); //Full for testing Heater
-	  #endif
-	  
-	  fan_logo();
-	  mdelay(1000);
-	  for(uint8_t i=0;i<50;i++){readMAX31855();}	//fill smootharray
+	// now mess the timer (millis will be x8 faster)
+	// to prevent audible noise from PWM
+	// TCCR0B = TCCR0B & 0b11111000 | 0x03; //x64 - default timer speed
+	TCCR0B = TCCR0B & 0b11111000 | 0x02; // x8
+
+	#ifdef DEBUG
+	analogWrite(FAN_PIN,255); //Full for testing Heater
+	#endif
+
+	fan_logo();
+	mdelay(1000);
+	for(uint8_t i=0;i<50;i++){readMAX31855();}	//fill smootharray
+
+	// read PID values from EEPROM
+	restore_settingsEEPROM();
+	// we use FACTOR for PID values to get rid of comas in interface.
+	myPID.SetTunings((float)pid_P / PID_P_FACTOR,(float)pid_I / PID_I_FACTOR,(float)pid_D / PID_D_FACTOR);
+	myPID.SetOutputLimits(0, PID_WINDOWSIZE);	//set PID output range
 	  
 }
 
 void loop() {
- 	
+ 	// reboot by holding button for 2 seconds...
+	WDT_Init();	// keep system alive
+
 
 	if(max31855_ms+80 < mmillis()) {
 		max31855_ms = mmillis();
@@ -87,16 +106,9 @@ void loop() {
 	showMainData();
 	u8g2.sendBuffer();
 
-    if (Serial.available() > 0) {
-		char incomingByte = Serial.read();
-		incomingByte=constrain(incomingByte,48,57);
-		outVal=map(incomingByte,48,57,0,100);
-		Serial.print(F("I = "));
-		Serial.print(incomingByte);
-		Serial.print(F(", O = "));
-		Serial.println(outVal);
-    }
 	if(outVal>0){doSoftwarePWM((uint16_t)outVal);}else{H_OFF;}
+	
+	analogWrite(FAN_PIN,map(fanSpeed,0,100,0,255);
 
 }
 
@@ -112,7 +124,7 @@ void doSoftwarePWM(uint16_t pwm_val){
 
 
 void adjustValues() {
-	int val_adjust=0;	// for adjusting temperature or time on the fly
+	int val_adjust=0;	// for adjusting temperature or fan speed on the fly
 	char encVal = 127;  // signed value - just enter to the loop
 	while (encVal == 127) { //loop here while button is pressed (waiting longer than 2 seconds will reset the board (Exit to the init menu).
 		encVal = rotaryEncRead();
@@ -126,7 +138,7 @@ void adjustValues() {
 			value_editable_millis=millis();		// start timer for edit time within 3 seconds
 		}
 	}
-	// adjust current temperature or timer
+	// adjust current temperature or fan speed
 	if(val_adjust!=0){
 		val_adjust*=10; // adjust in 10's steps
 		if(value_editable==2){

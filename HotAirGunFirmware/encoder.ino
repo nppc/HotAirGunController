@@ -30,6 +30,7 @@ void INT_doEncoder() {
 }
 
 // determine if rotary encoder was pressed longer than 2 seconds
+/*
 bool is_rotaryEncLongPress() {
 	 if(digitalRead(BUTTON_PIN)){
 		 // button is not pressed
@@ -45,6 +46,7 @@ bool is_rotaryEncLongPress() {
 	 }
 	 return false;
 }
+*/
 
 void waitUntilButtonReleased(){
 	// wait until button is depressed
