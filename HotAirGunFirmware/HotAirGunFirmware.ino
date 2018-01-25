@@ -29,8 +29,8 @@
 	#include "oled.h"
 
 
-#define PID_WINDOWSIZE 500	// upper limit of PID output
-#define PID_ABSTEMPDIFFERENCE 50	// Difference in set and current temperature when PID should not work.
+#define PID_WINDOWSIZE 800	// upper limit of PID output
+#define PID_ABSTEMPDIFFERENCE 100	// Difference in set and current temperature when PID should not work.
 #define PID_P_FACTOR 1.0	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
 #define PID_I_FACTOR 10.0	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
 #define PID_D_FACTOR 1.0	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
@@ -47,7 +47,7 @@ int pid_P, pid_I, pid_D; // PID values
 
 unsigned long soft_pwm_millis = mmillis();
 
-uint8_t fanSpeed, fanSpeed_actual=0;
+int fanSpeed, fanSpeed_actual=0; // signed values. byte type is not working here
 unsigned long fanSpeed_millis=0;
 int airTemp;
 
@@ -108,7 +108,7 @@ void setup() {
 
 	// we use FACTOR for PID values to get rid of comas in interface.
 	myPID.SetTunings((float)pid_P / PID_P_FACTOR,(float)pid_I / PID_I_FACTOR,(float)pid_D / PID_D_FACTOR);
-	myPID.SetOutputLimits(0, PID_WINDOWSIZE/5);	//set PID output range (1/5)
+	myPID.SetOutputLimits(0, PID_WINDOWSIZE);	//set PID output range (1/5)
 
 	myPID.SetMode(AUTOMATIC); // turn on PID
 	
@@ -121,8 +121,15 @@ void loop() {
 	getTemperature();	// updates airTemp variable
 	currentTemp = airTemp;	// variable for PID
 
-	//if(setPoint>20){myPID.Compute();}	// Prevent I windup when heater should be off
-	myPID.Compute();
+	//myPID.Compute();
+	// use PID only when difference is small (to prevent windup of I)
+	if(abs(setPoint-currentTemp)<PID_ABSTEMPDIFFERENCE){
+		myPID.Compute();
+	}else{
+		outputVal = (setPoint > currentTemp ? PID_WINDOWSIZE : 0); // ON/OFF control
+	}
+
+	if(setPoint>20){doSoftwarePWM((uint16_t)outputVal);}else{H_OFF;soft_pwm_millis=mmillis();}
 	
 	adjustValues();
 	u8g2.clearBuffer();
@@ -130,8 +137,6 @@ void loop() {
 	u8g2.sendBuffer();
 
 	fanControl();
-
-	if(outputVal>0 && setPoint>20){doSoftwarePWM((uint16_t)outputVal);}else{H_OFF;soft_pwm_millis=mmillis();}
 
 	// debug 
 	#ifdef DEBUG

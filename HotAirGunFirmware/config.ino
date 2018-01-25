@@ -27,7 +27,7 @@ void configureParams(){
 						pid_D = constrain(pid_D+encVal*10,0,990);
 						break;
 					case 4:	// Fan speed
-						fanSpeed = constrain(fanSpeed+encVal,30,100);
+						fanSpeed = constrain(fanSpeed+encVal*10,30,100);
 						break;
 				} 
 			}
