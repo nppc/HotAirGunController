@@ -41,7 +41,38 @@ static const uint8_t u8g_bigCelsius_bits[] U8X8_PROGMEM = {
   0x07, 0x00, 0xC5, 0x03, 0x77, 0x04, 0x30, 0x00, 0x18, 0x00, 0x18, 0x00, 
   0x18, 0x00, 0x18, 0x00, 0x18, 0x00, 0x18, 0x00, 0x30, 0x00, 0x70, 0x04, 
   0xC0, 0x03, };
-  
+
+//8X14
+static const uint8_t u8g_clear_bits[] U8X8_PROGMEM = {
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000
+};
+//8X10
+static const uint8_t u8g_heating_bits[] U8X8_PROGMEM = {
+	0b01001000,
+	0b00100100,
+	0b00100100,
+	0b01001000,
+	0b10010000,
+	0b10010000,
+	0b01001000,
+	0b00100100,
+	0b00000000,
+	0b11111110
+};
+ 
+//8X8  -Percent_small
+static const uint8_t u8g_percent_small_bits[] U8X8_PROGMEM = {
+  0x22, 0x25, 0x12, 0x10, 0x08, 0x48, 0xA4, 0x44, };
+ 
   
 void fan_logo(){
  	u8g2.clearBuffer();
@@ -59,9 +90,15 @@ void showMainData(){
 	uint16_t curval=(int)setPoint;
 	u8g2.setCursor(0, 10);
 	u8g2.print(curval);
-	uint16_t tmpcoord = 1+6*(curval<100 ? 2 : 3);	// two or three digits number
-	u8g2.setBitmapMode(1);
+	uint8_t tmpcoord = 1+6*(curval<100 ? 2 : 3);	// two or three digits number
 	u8g2.drawXBMP(tmpcoord, 0, 8, 9, u8g_celsius_bits);
+	u8g2.setCursor(69, 10);
+	u8g2.print(fanSpeed);
+	tmpcoord = 70+6*(fanSpeed<100 ? 2 : 3);	// two or three digits number
+	u8g2.drawXBMP(tmpcoord, 2, 8, 8, u8g_percent_small_bits);
+
+	printHeaterState();
+	
 	u8g2.setFont(u8g2_font_t0_22_mf);
 	u8g2.drawXBMP(0, 19, 12, 13, u8g_hot_air_bits);
 	u8g2.setCursor(15, 31);
@@ -71,6 +108,14 @@ void showMainData(){
 
 	u8g2.drawXBMP(69, 18, 14, 14, u8g_fan_small_bits);
 	u8g2.setCursor(16+69, 31);
-	u8g2.print(fanSpeed);
+	u8g2.print(fanSpeed_actual);
 	u8g2.print("%");
+}
+
+void printHeaterState(){
+	if(digitalRead(HEATER_PIN)){
+		u8g2.drawXBMP( 120, 0, 8, 10, u8g_heating_bits);
+	}else{
+		u8g2.drawXBMP( 120, 0, 8, 10, u8g_clear_bits);
+	}
 }

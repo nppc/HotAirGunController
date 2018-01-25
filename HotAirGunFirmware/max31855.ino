@@ -1,5 +1,6 @@
 #define filterSamples   9
 uint16_t TSmoothArray[filterSamples];
+unsigned long max31855_ms = mmillis();
 
 void MAX31855_init(void) {
 	digitalWrite(MAXCS_PIN,LOW);
@@ -13,7 +14,7 @@ void MAX31855_init(void) {
 // only positive temperatures
 // timer is messed up (x8 faster), but using delay(1) here is no problem, because 1/8ms is still too much (actually delays can be as low as 100ns)
 // the conversion time is about 70-100ms
-uint16_t readMAX31855(void) { 
+int readMAX31855(void) { 
   uint16_t d = 0;
 
 	pinMode(MAXCS_PIN, OUTPUT); // pin to low
@@ -34,7 +35,7 @@ uint16_t readMAX31855(void) {
 }
 
 // smooth algorytm for ADC reading
-uint16_t digitalSmooth(uint16_t rawIn, uint16_t *sensSmoothArray){     // "int *sensSmoothArray" passes an array to the function - the asterisk indicates the array name is a pointer
+int digitalSmooth(uint16_t rawIn, uint16_t *sensSmoothArray){     // "int *sensSmoothArray" passes an array to the function - the asterisk indicates the array name is a pointer
   uint16_t j, k, temp, top, bottom;
   unsigned long total;
   static int i;
@@ -72,4 +73,11 @@ uint16_t digitalSmooth(uint16_t rawIn, uint16_t *sensSmoothArray){     // "int *
   }
 
   return total / k;    // divide by number of samples
+}
+
+void getTemperature(){
+	if(max31855_ms+80 < mmillis()) {
+		max31855_ms = mmillis();
+		airTemp = readMAX31855();
+	}
 }

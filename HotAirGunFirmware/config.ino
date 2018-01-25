@@ -44,6 +44,9 @@ void configureParams(){
 		}
 		WDT_Init();
 		printConfParam(item, edit);
+		getTemperature();	// updates airTemp variable
+		fanControl();
+		
 	}
 }
 

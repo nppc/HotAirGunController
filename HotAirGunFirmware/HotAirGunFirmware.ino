@@ -1,3 +1,4 @@
+#define SOFTRESET	// If your Arduino has broken bootloader (watchdog is not working) then enable this dirty trick or better - flash optiboot to your arduino.
 //#define DEBUG
 
 #define FAN_PIN     6 // Pin for controlling fan via PWM
@@ -40,11 +41,14 @@ double outputVal;
 
 int pid_P, pid_I, pid_D; // PID values
 
-unsigned long soft_pwm_millis = mmillis();
-unsigned long serial_ms = mmillis();
-unsigned long max31855_ms = mmillis();
+#ifdef DEBUG
+	unsigned long serial_ms = 0;
+#endif
 
-uint8_t fanSpeed;
+unsigned long soft_pwm_millis = mmillis();
+
+uint8_t fanSpeed, fanSpeed_actual=0;
+unsigned long fanSpeed_millis=0;
 int airTemp;
 
 int outVal = 0;
@@ -52,50 +56,56 @@ int outVal = 0;
 //input/output variables passed by reference, so they are updated automatically
 PID myPID(&currentTemp, &outputVal, &setPoint, 0, 0, 0, DIRECT); // PID values will be set later
 
+// It is very important to check the temperature all the time.
+// Because, if we turn off fan, when heater is still hot, then we can brake the device.
+// So, even in config we should monitor temperature and cool down the heater with fan if needed. 
 
 void setup() {
 	wdt_disable();
+
+	// mess the timer (millis will be x8 faster)
+	// to prevent audible noise from PWM
+	// TCCR0B = TCCR0B & 0b11111000 | 0x03; //x64 - default timer speed
+	TCCR0B = TCCR0B & 0b11111000 | 0x02; // x8
+
 	//Heater Off
 	H_OFF;
 	pinMode(HEATER_PIN, OUTPUT);
 	//Duct is Off
-	analogWrite(FAN_PIN,fanSpeed);
+	analogWrite(FAN_PIN,fanSpeed_actual);
 
 	u8g2.begin();
 	u8g2.setDrawColor(2);	// Xor is default mode across all sketch.
 	u8g2.setFontMode(1);	// Or is default mode
+	u8g2.setBitmapMode(1);
 	u8g2.setFont(u8g2_font_t0_22_mf);
 
-
+	#ifdef DEBUG
+		Serial.begin(115200);
+		Serial.println(F("Startup"));
+	#endif
+	
 	initEncoder();
+
+	// read PID values from EEPROM
+	restore_settingsEEPROM();
 
 	// check, if button was pressed while power on (or after reset), then enter to Config mode
 	if (rotaryEncRead() == 127){
 		// go to config menu
-		//configureParams();
+		mdelay(100);
+		// check again does we still holding the button?
+		if (rotaryEncRead() == 127){configureParams();}
 	}
 
 	//Serial.begin(115200);
 
 	MAX31855_init();
   
-	// now mess the timer (millis will be x8 faster)
-	// to prevent audible noise from PWM
-	// TCCR0B = TCCR0B & 0b11111000 | 0x03; //x64 - default timer speed
-	TCCR0B = TCCR0B & 0b11111000 | 0x02; // x8
-
-	#ifdef DEBUG
-	analogWrite(FAN_PIN,255); //Full for testing Heater
-	#endif
-
 	fan_logo();
 	mdelay(1000);
 	for(uint8_t i=0;i<50;i++){readMAX31855();}	//fill smootharray
 
-	soft_pwm_millis = mmillis()-50000;	// Before turning on the heater wait for some seconds
-	
-	// read PID values from EEPROM
-	restore_settingsEEPROM();
 	// we use FACTOR for PID values to get rid of comas in interface.
 	myPID.SetTunings((float)pid_P / PID_P_FACTOR,(float)pid_I / PID_I_FACTOR,(float)pid_D / PID_D_FACTOR);
 	myPID.SetOutputLimits(0, PID_WINDOWSIZE/5);	//set PID output range (1/5)
@@ -108,21 +118,31 @@ void loop() {
  	// reboot by holding button for 2 seconds...
 	WDT_Init();	// keep system alive
 
+	getTemperature();	// updates airTemp variable
+	currentTemp = airTemp;	// variable for PID
 
-	if(max31855_ms+80 < mmillis()) {
-		max31855_ms = mmillis();
-		airTemp = readMAX31855();
-		currentTemp = airTemp;	// variable for PID
-	}	
+	//if(setPoint>20){myPID.Compute();}	// Prevent I windup when heater should be off
+	myPID.Compute();
+	
 	adjustValues();
 	u8g2.clearBuffer();
 	showMainData();
 	u8g2.sendBuffer();
 
-	analogWrite(FAN_PIN,map(fanSpeed,0,100,0,255));
+	fanControl();
 
-	
-	if(outputVal>0 && setPoint>20){doSoftwarePWM((uint16_t)outputVal);}else{H_OFF;}
+	if(outputVal>0 && setPoint>20){doSoftwarePWM((uint16_t)outputVal);}else{H_OFF;soft_pwm_millis=mmillis();}
+
+	// debug 
+	#ifdef DEBUG
+	if (serial_ms+1000 < mmillis()) {
+		serial_ms = mmillis();
+		Serial.print(F("Set: "));Serial.print(setPoint);
+		Serial.print(F(", Actual: "));Serial.print(currentTemp);
+		Serial.print(F(", PWM: "));Serial.print(outputVal);
+		Serial.print(F(", Fan: "));Serial.println(fanSpeed_actual);
+	}	
+	#endif	
 
 }
 
@@ -146,7 +166,13 @@ void adjustValues() {
 			val_adjust = encVal;
 		}else if(encVal==127){
 			H_OFF;	// turn off heater, because we will freeze here for some time...
+			#ifdef DEBUG
+				Serial.println(F("Button Pressed..."));
+			#endif
 			waitUntilButtonReleased();
+			#ifdef DEBUG
+				Serial.println(F("Button Released"));
+			#endif
 			value_editable++;	// change edit mode
 			if(value_editable>1){value_editable=0;}
 			value_editable_millis=mmillis();		// start timer for edit time within 3 seconds
