@@ -29,10 +29,10 @@
 	#include "oled.h"
 
 
-#define PID_WINDOWSIZE 800	// upper limit of PID output
+#define PID_WINDOWSIZE 400	// upper limit of PID output
 #define PID_ABSTEMPDIFFERENCE 100	// Difference in set and current temperature when PID should not work.
-#define PID_P_FACTOR 1.0	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
-#define PID_I_FACTOR 10.0	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
+#define PID_P_FACTOR 0.1	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
+#define PID_I_FACTOR 0.1	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
 #define PID_D_FACTOR 1.0	//PID values are stored in EEPROM in int format. So, scale them (div) before use.
 
 double currentTemp=0;
@@ -107,7 +107,7 @@ void setup() {
 	for(uint8_t i=0;i<50;i++){readMAX31855();}	//fill smootharray
 
 	// we use FACTOR for PID values to get rid of comas in interface.
-	myPID.SetTunings((float)pid_P / PID_P_FACTOR,(float)pid_I / PID_I_FACTOR,(float)pid_D / PID_D_FACTOR);
+	myPID.SetTunings((float)pid_P * PID_P_FACTOR,(float)pid_I * PID_I_FACTOR,(float)pid_D * PID_D_FACTOR);
 	myPID.SetOutputLimits(0, PID_WINDOWSIZE);	//set PID output range (1/5)
 
 	myPID.SetMode(AUTOMATIC); // turn on PID
@@ -152,13 +152,21 @@ void loop() {
 }
 
 
-// PWM output 
+// PWM output
+/* 
 void doSoftwarePWM(uint16_t pwm_val){
   if (mmillis() - soft_pwm_millis > (PID_WINDOWSIZE))
     { //time to shift the Relay Window
     soft_pwm_millis += PID_WINDOWSIZE;
     }
   if (pwm_val < mmillis() - soft_pwm_millis){H_OFF}else{H_ON}
+}
+*/
+void doSoftwarePWM(uint16_t pwm_val){
+	if (soft_pwm_millis+PID_WINDOWSIZE < mmillis()) {
+		soft_pwm_millis = mmillis();
+		if (pwm_val > 0){H_ON;}	// start of the impulse
+	} else if (soft_pwm_millis + pwm_val < mmillis()){H_OFF;}
 }
 
 
