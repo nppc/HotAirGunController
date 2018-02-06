@@ -279,7 +279,7 @@ Wire Wire Line
 	5150 3850 5150 4050
 Wire Wire Line
 	5900 3650 5600 3650
-Text Label 5600 3650 0    60   ~ 0
+Text Label 5600 3950 0    60   ~ 0
 Fan
 Wire Wire Line
 	4300 3750 4450 3750
@@ -576,13 +576,13 @@ Text Label 5550 2650 1    60   ~ 0
 Heater
 Text Label 6900 3850 2    60   ~ 0
 Heater
-Text Label 5600 3950 0    60   ~ 0
+Text Label 5600 3850 0    60   ~ 0
 T_SCK
 Wire Wire Line
 	5900 3950 5600 3950
-Text Label 5600 3750 0    60   ~ 0
+Text Label 5600 3650 0    60   ~ 0
 T_SO
-Text Label 5600 3850 0    60   ~ 0
+Text Label 5600 3750 0    60   ~ 0
 T_CS
 $Comp
 L Conn_01x01 Heater_pos1
