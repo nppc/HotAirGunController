@@ -1,18 +1,30 @@
 #define SOFTRESET	// If your Arduino has broken bootloader (watchdog is not working) then enable this dirty trick or better - flash optiboot to your arduino.
+#define PROTOTYPE	// Prototype version without V1.0 PCB 
 //#define DEBUG
 
-#define FAN_PIN     6 // Pin for controlling fan via PWM
-#define LED_PIN     13
-#define HEATER_PIN  9
-#define MAXSCK_PIN  2
-#define MAXCS_PIN   5
-#define MAXDO_PIN   7
-
+#ifdef PROTOTYPE
+	#define FAN_PIN     6 // Pin for controlling fan via PWM
+	#define HEATER_PIN  9 // Pin for controlling SSR
+	#define MAXSCK_PIN  2
+	#define MAXCS_PIN   5
+	#define MAXDO_PIN   7
+#else
+	#define FAN_PIN     9  // Pin for controlling fan via PWM
+	#define HEATER_PIN  A1 // Pin for controlling SSR
+	#define MAXSCK_PIN  8
+	#define MAXCS_PIN   7
+	#define MAXDO_PIN   6
+#endif
+#define LED_PIN      13
 #define encoderPinA   3	// Interrupt pin (coupled with capacitor to GND)
 #define encoderPinB   4 // Interrupt pin (coupled with capacitor to GND)
 #define BUTTON_PIN   12 // Pin for knob button
 
-#define TIMER_MULTIPLIER  8 // if timer has normal (x64) prescaller, then 1
+#ifdef PROTOTYPE
+	#define TIMER_MULTIPLIER  8 // if timer has normal (x64) prescaller, then 1
+#else
+	#define TIMER_MULTIPLIER  1 // if timer has normal (x64) prescaller, then 1
+#endif
 
 // some macros
 #define mdelay(val) delay(val * TIMER_MULTIPLIER)
@@ -26,7 +38,7 @@
 #include <EEPROM.h>
 #include "eeprom.h"
 #include <avr/wdt.h>
-	#include "oled.h"
+#include "oled.h"
 
 
 #define PID_WINDOWSIZE 400	// upper limit of PID output
@@ -66,7 +78,12 @@ void setup() {
 	// mess the timer (millis will be x8 faster)
 	// to prevent audible noise from PWM
 	// TCCR0B = TCCR0B & 0b11111000 | 0x03; //x64 - default timer speed
-	TCCR0B = TCCR0B & 0b11111000 | 0x02; // x8
+#ifdef PROTOTYPE
+	TCCR0B = (TCCR0B & 0b11111000) | 0x02; // x8 for pin D6
+#else
+	// in this case millis() and delay() is not affected
+	TCCR1B = (TCCR1B & 0b11111000) | 0x02; // x8 for pin D9
+#endif
 
 	//Heater Off
 	H_OFF;
