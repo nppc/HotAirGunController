@@ -88,6 +88,7 @@ void setup() {
 	//Heater Off
 	H_OFF;
 	pinMode(HEATER_PIN, OUTPUT);
+	pinMode(LED_PIN, OUTPUT);
 	//Duct is Off
 	analogWrite(FAN_PIN,fanSpeed_actual);
 
