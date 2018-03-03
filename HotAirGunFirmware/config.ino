@@ -3,9 +3,10 @@
 void configureParams(){
 	uint8_t item = 1;
 	boolean edit = false;
+	
+	printEnterSettings();
+	waitUntilButtonReleased();	
 	printConfParam(item, edit); 
-
-	waitUntilButtonReleased();
 	
 	// wait for encoder
 	char encVal = 0;  // signed value - nothing is pressed
@@ -48,6 +49,13 @@ void configureParams(){
 		fanControl();
 		
 	}
+}
+
+void printEnterSettings(){
+	u8g2.clearBuffer();
+	u8g2.setCursor(0, 24);
+	u8g2.print(F("CONFIG"));
+	u8g2.sendBuffer();
 }
 
 void printSavingSettings(){
