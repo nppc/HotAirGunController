@@ -1,6 +1,7 @@
 #define SOFTRESET	// If your Arduino has broken bootloader (watchdog is not working) then enable this dirty trick or better - flash optiboot to your arduino.
 #define PROTOTYPE	// Prototype version without V1.0 PCB 
 //#define DEBUG
+#define SUSPEND_LONGPRESS // Enter Cool down (Suspend mode) when encoder long press while in not safe Temp.
 
 #ifdef PROTOTYPE
 	#define FAN_PIN     6 // Pin for controlling fan via PWM
@@ -63,6 +64,7 @@ int fanSpeed, fanSpeed_actual=0; // signed values. byte type is not working here
 unsigned long fanSpeed_millis=0;
 int airTemp;
 int SafeTemp;	//Safe temperature to enter to the Config
+int presetTemp = 20; // variable for storing adjusted temperature
 
 int outVal = 0;
 
@@ -140,7 +142,9 @@ void loop() {
 	getTemperature();	// updates airTemp variable
 	currentTemp = airTemp;	// variable for PID
 
-	//myPID.Compute();
+	// if not suspend
+	setPoint = (float)presetTemp;
+	
 	// use PID only when difference is small (to prevent windup of I)
 	if(abs(setPoint-currentTemp)<PID_ABSTEMPDIFFERENCE){
 		myPID.Compute();
@@ -214,7 +218,7 @@ void adjustValues() {
 		if(value_editable==1){
 			fanSpeed=constrain(fanSpeed+val_adjust,30,100);
 		}else if(value_editable==2){
-			setPoint=constrain((int)setPoint+val_adjust,20,500);
+			presetTemp=constrain(presetTemp+val_adjust,20,500);
 		}else{
 			value_editable=2;
 		}

@@ -50,6 +50,21 @@ bool is_rotaryEncLongPress() {
 
 void waitUntilButtonReleased(){
 	// wait until button is depressed
-	while(rotaryEncRead() == 127){if(SafeTemp < airTemp){WDT_Init();}} // keep system alive
+	int delaycounter=0;
+	while(rotaryEncRead() == 127){
+		if(SafeTemp < airTemp){
+			WDT_Init();
+#ifdef SUSPEND_LONGPRESS
+			mdelay(50);
+			delaycounter++;
+			if(delaycounter>40){
+				// enable cooldown mode
+				presetTemp=20;
+				fanControl();
+				printSuspend();
+			};
+#endif			
+		}
+	} // keep system alive
 	mdelay(50); // wait for noise is gone from button contacts
 }

@@ -2,7 +2,7 @@
 // If Preset temperature is higher than 20, then run fan on preset speed.
 // If heater is off (Preset temperature is less than 30), then control fan automatically, until it cools down to 50 deg.
 void fanControl(){
-	if(setPoint>20){
+	if(presetTemp>20){
 		// heater is working
 		fanSpeed_actual=fanSpeed;
 	}else if (airTemp>100){

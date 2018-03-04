@@ -94,10 +94,9 @@ void showMainData(){
 		u8g2.drawBox(0,0,33,11);
 	}
 	u8g2.setFont(u8g2_font_profont12_tn);	//numeric font for preset temperature
-	uint16_t curval=(int)setPoint;
 	u8g2.setCursor(3, 10);
-	u8g2.print(curval);
-	uint8_t tmpcoord = 4+6*(curval<100 ? 2 : 3);	// two or three digits number
+	u8g2.print(presetTemp);
+	uint8_t tmpcoord = 4+6*(presetTemp<100 ? 2 : 3);	// two or three digits number
 	u8g2.drawXBMP(tmpcoord, 1, 8, 9, u8g_celsius_bits);
 	u8g2.setCursor(69, 10);
 	u8g2.print(fanSpeed);
@@ -127,3 +126,12 @@ void printHeaterState(){
 		u8g2.drawXBMP( 120, 0, 8, 10, u8g_clear_bits);
 	}
 }
+
+#ifdef SUSPEND_LONGPRESS
+void printSuspend(){
+	u8g2.clearBuffer();
+	u8g2.setCursor(0, 24);
+	u8g2.print(F("SUSPEND"));
+	u8g2.sendBuffer();
+}
+#endif
