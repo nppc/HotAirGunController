@@ -81,17 +81,24 @@ void fan_logo(){
 	u8g2.drawStr(0,24,"Hot");	
 	u8g2.drawXBMP(38, 5, 27, 27, u8g_fan_bits);
 	u8g2.drawStr(68,24,"Gun");
+	u8g2.setDrawColor(2);
 	u8g2.sendBuffer();
 	
 }
 
 void showMainData(){
+	u8g2.clearBuffer();
+	if(value_editable==1){
+		u8g2.drawBox(66,0,33,11);
+	}else if(value_editable==2){
+		u8g2.drawBox(0,0,33,11);
+	}
 	u8g2.setFont(u8g2_font_profont12_tn);	//numeric font for preset temperature
 	uint16_t curval=(int)setPoint;
-	u8g2.setCursor(0, 10);
+	u8g2.setCursor(3, 10);
 	u8g2.print(curval);
-	uint8_t tmpcoord = 1+6*(curval<100 ? 2 : 3);	// two or three digits number
-	u8g2.drawXBMP(tmpcoord, 0, 8, 9, u8g_celsius_bits);
+	uint8_t tmpcoord = 4+6*(curval<100 ? 2 : 3);	// two or three digits number
+	u8g2.drawXBMP(tmpcoord, 1, 8, 9, u8g_celsius_bits);
 	u8g2.setCursor(69, 10);
 	u8g2.print(fanSpeed);
 	tmpcoord = 70+6*(fanSpeed<100 ? 2 : 3);	// two or three digits number
@@ -110,6 +117,7 @@ void showMainData(){
 	u8g2.setCursor(16+69, 31);
 	u8g2.print(fanSpeed_actual);
 	u8g2.print("%");
+	u8g2.sendBuffer();
 }
 
 void printHeaterState(){

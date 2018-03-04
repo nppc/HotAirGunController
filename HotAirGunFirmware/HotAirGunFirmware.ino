@@ -151,9 +151,7 @@ void loop() {
 	if(setPoint>20){doSoftwarePWM((uint16_t)outputVal);}else{H_OFF;soft_pwm_millis=mmillis();}
 	
 	adjustValues();
-	u8g2.clearBuffer();
 	showMainData();
-	u8g2.sendBuffer();
 
 	fanControl();
 
@@ -206,7 +204,7 @@ void adjustValues() {
 				Serial.println(F("Button Released"));
 			#endif
 			value_editable++;	// change edit mode
-			if(value_editable>1){value_editable=0;}
+			if(value_editable>2){value_editable=1;}
 			value_editable_millis=mmillis();		// start timer for edit time within 3 seconds
 		}
 	}
@@ -215,8 +213,10 @@ void adjustValues() {
 		val_adjust*=10; // adjust in 10's steps
 		if(value_editable==1){
 			fanSpeed=constrain(fanSpeed+val_adjust,30,100);
-		}else {
+		}else if(value_editable==2){
 			setPoint=constrain((int)setPoint+val_adjust,20,500);
+		}else{
+			value_editable=2;
 		}
 		value_editable_millis=mmillis();
 	}
