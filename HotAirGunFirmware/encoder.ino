@@ -61,8 +61,6 @@ void waitUntilButtonReleased(){
 				// enable/disable cooldown mode
 				if(!suspendMode){
 					suspendMode=1;
-					setPoint = 20;
-					fanControl();
 					printSuspend();
 				}else{
 					suspendMode=0;

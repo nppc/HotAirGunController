@@ -145,9 +145,7 @@ void loop() {
 	currentTemp = airTemp;	// variable for PID
 
 	// if not suspend
-	if(!suspendMode){
-		setPoint = (float)presetTemp;
-	}
+	if(!suspendMode){setPoint = (float)presetTemp;}else{setPoint = 20.0;}
 	
 	// use PID only when difference is small (to prevent windup of I)
 	if(abs(setPoint-currentTemp)<PID_ABSTEMPDIFFERENCE){
@@ -176,17 +174,7 @@ void loop() {
 
 }
 
-
 // PWM output
-/* 
-void doSoftwarePWM(uint16_t pwm_val){
-  if (mmillis() - soft_pwm_millis > (PID_WINDOWSIZE))
-    { //time to shift the Relay Window
-    soft_pwm_millis += PID_WINDOWSIZE;
-    }
-  if (pwm_val < mmillis() - soft_pwm_millis){H_OFF}else{H_ON}
-}
-*/
 void doSoftwarePWM(uint16_t pwm_val){
 	if (soft_pwm_millis+PID_WINDOWSIZE < mmillis()) {
 		soft_pwm_millis = mmillis();
