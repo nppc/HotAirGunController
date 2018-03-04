@@ -3,3 +3,4 @@
 #define EEPROM_PID_I				 4 // int I value for PID control
 #define EEPROM_PID_D				 6 // int D value for PID control
 #define EEPROM_FAN_SPEED 			 8 // int Fan speed.
+#define EEPROM_SAFE_TEMP 			10 // int Safe Temperature.

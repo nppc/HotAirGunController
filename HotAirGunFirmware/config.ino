@@ -1,4 +1,4 @@
-#define MENU_ITEMS	4+1 // 4 parameters plus 1 Save/Exit
+#define MENU_ITEMS	5+1 // 5 parameters plus 1 Save/Exit
 
 void configureParams(){
 	uint8_t item = 1;
@@ -29,6 +29,9 @@ void configureParams(){
 						break;
 					case 4:	// Fan speed
 						fanSpeed = constrain(fanSpeed+encVal*10,30,100);
+						break;
+					case 5:	// Safe Temperature for entering Config
+						SafeTemp = constrain(SafeTemp+encVal*10,40,500);
 						break;
 				} 
 			}
@@ -87,7 +90,10 @@ void printConfParam(uint8_t item, boolean edit){
 		case 4:	// Preheat temperature
 			u8g2.print(F("Fan %"));
 			break;
-		case 5: // Save settings and exit
+		case 5:	// Safe temperature
+			u8g2.print(F("Safe T"));
+			break;
+		default: // Save settings and exit (last menu item)
 			u8g2.print(F("Save & Exit"));
 			break;
 	} 
@@ -109,8 +115,11 @@ uint16_t getValueForConfigItem(uint8_t item) {
 		case 3:
 			return pid_D;
 			break;
-		case 4:	// Preheat temperature
+		case 4:
 			return fanSpeed;
+			break;
+		case 5:	// Safe temperature
+			return SafeTemp;
 			break;
 	} 
 }

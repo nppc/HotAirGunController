@@ -50,6 +50,6 @@ bool is_rotaryEncLongPress() {
 
 void waitUntilButtonReleased(){
 	// wait until button is depressed
-	while(rotaryEncRead() == 127){}
+	while(rotaryEncRead() == 127){if(SafeTemp < airTemp){WDT_Init();}} // keep system alive
 	mdelay(50); // wait for noise is gone from button contacts
 }

@@ -62,6 +62,7 @@ unsigned long soft_pwm_millis = mmillis();
 int fanSpeed, fanSpeed_actual=0; // signed values. byte type is not working here
 unsigned long fanSpeed_millis=0;
 int airTemp;
+int SafeTemp;	//Safe temperature to enter to the Config
 
 int outVal = 0;
 
@@ -89,9 +90,17 @@ void setup() {
 	H_OFF;
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(LED_PIN, OUTPUT);
-	//Duct is Off
-	analogWrite(FAN_PIN,fanSpeed_actual);
 
+	// read PID values from EEPROM
+	restore_settingsEEPROM();
+
+	// read temperature as soon as possible
+	MAX31855_init();
+	for(uint8_t i=0;i<50;i++){airTemp = readMAX31855();}	//fill smootharray
+
+	//Set fan speed
+	fanControl();
+	
 	u8g2.begin();
 	u8g2.setDrawColor(2);	// Xor is default mode across all sketch.
 	u8g2.setFontMode(1);	// Or is default mode
@@ -105,9 +114,6 @@ void setup() {
 	
 	initEncoder();
 
-	// read PID values from EEPROM
-	restore_settingsEEPROM();
-
 	// check, if button was pressed while power on (or after reset), then enter to Config mode
 	if (rotaryEncRead() == 127){
 		// go to config menu
@@ -116,13 +122,8 @@ void setup() {
 		if (rotaryEncRead() == 127){configureParams();}
 	}
 
-	//Serial.begin(115200);
-
-	MAX31855_init();
-  
 	fan_logo();
-	mdelay(1000);
-	for(uint8_t i=0;i<50;i++){readMAX31855();}	//fill smootharray
+	mdelay(2000);
 
 	// we use FACTOR for PID values to get rid of comas in interface.
 	myPID.SetTunings((float)pid_P * PID_P_FACTOR,(float)pid_I * PID_I_FACTOR,(float)pid_D * PID_D_FACTOR);
