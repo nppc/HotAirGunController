@@ -66,6 +66,8 @@ int airTemp;
 int SafeTemp;	//Safe temperature to enter to the Config
 int presetTemp = 20; // variable for storing adjusted temperature
 
+bool suspendMode=0;
+
 int outVal = 0;
 
 //input/output variables passed by reference, so they are updated automatically
@@ -143,7 +145,9 @@ void loop() {
 	currentTemp = airTemp;	// variable for PID
 
 	// if not suspend
-	setPoint = (float)presetTemp;
+	if(!suspendMode){
+		setPoint = (float)presetTemp;
+	}
 	
 	// use PID only when difference is small (to prevent windup of I)
 	if(abs(setPoint-currentTemp)<PID_ABSTEMPDIFFERENCE){

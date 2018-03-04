@@ -134,4 +134,12 @@ void printSuspend(){
 	u8g2.print(F("SUSPEND"));
 	u8g2.sendBuffer();
 }
+
+void printResume(){
+	u8g2.clearBuffer();
+	u8g2.setCursor(0, 24);
+	u8g2.print(F("RESUME"));
+	u8g2.sendBuffer();
+}
+
 #endif

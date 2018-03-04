@@ -52,17 +52,24 @@ void waitUntilButtonReleased(){
 	// wait until button is depressed
 	int delaycounter=0;
 	while(rotaryEncRead() == 127){
-		if(SafeTemp < airTemp){
+		if(SafeTemp < airTemp || suspendMode){
 			WDT_Init();
 #ifdef SUSPEND_LONGPRESS
 			mdelay(50);
 			delaycounter++;
-			if(delaycounter>40){
-				// enable cooldown mode
-				presetTemp=20;
-				fanControl();
-				printSuspend();
-			};
+			if(delaycounter>30){
+				// enable/disable cooldown mode
+				if(!suspendMode){
+					suspendMode=1;
+					setPoint = 20;
+					fanControl();
+					printSuspend();
+				}else{
+					suspendMode=0;
+					printResume();
+				}
+				while(rotaryEncRead() == 127){WDT_Init();}
+			}
 #endif			
 		}
 	} // keep system alive
