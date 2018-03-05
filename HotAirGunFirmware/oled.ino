@@ -69,10 +69,15 @@ static const uint8_t u8g_heating_bits[] U8X8_PROGMEM = {
 	0b11111110
 };
  
-//8X8  -Percent_small
+//8X8  - Percent_small
 static const uint8_t u8g_percent_small_bits[] U8X8_PROGMEM = {
   0x22, 0x25, 0x12, 0x10, 0x08, 0x48, 0xA4, 0x44, };
- 
+
+// 12X10 - Suspend (Down Arrow)
+static char u8g_suspend_arrow_bits[] = {
+  0xF0, 0x00, 0x90, 0x00, 0x90, 0x00, 0x9F, 0x0F, 0x03, 0x0C, 0x06, 0x06, 
+  0x0C, 0x03, 0x98, 0x01, 0xF0, 0x00, 0x60, 0x00, };
+  
   
 void fan_logo(){
  	u8g2.clearBuffer();
@@ -116,6 +121,11 @@ void showMainData(){
 	u8g2.setCursor(16+69, 31);
 	u8g2.print(fanSpeed_actual);
 	u8g2.print("%");
+
+	if(suspendMode){
+		u8g2.drawXBMP(50, 0, 12, 10, u8g_suspend_arrow_bits);
+	}
+	
 	u8g2.sendBuffer();
 }
 
