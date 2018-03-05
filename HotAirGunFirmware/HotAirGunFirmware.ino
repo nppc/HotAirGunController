@@ -1,7 +1,9 @@
-#define SOFTRESET	// If your Arduino has broken bootloader (watchdog is not working) then enable this dirty trick or better - flash optiboot to your arduino.
-#define PROTOTYPE	// Prototype version without V1.0 PCB 
+//#define SOFTRESET	// If your Arduino has broken bootloader (watchdog is not working) then enable this dirty trick or better - flash optiboot to your arduino.
+//#define PROTOTYPE	// Prototype version without V1.0 PCB 
 //#define DEBUG
-#define SUSPEND_LONGPRESS // Enter Cool down (Suspend mode) when encoder long press while in not safe Temp.
+//#define SUSPEND_LONGPRESS // Enter Cool down (Suspend mode) when encoder long press while in not safe Temp.
+#define USE_MAGNET_SENSOR
+#define USE_SILENCE_FAN
 
 #ifdef PROTOTYPE
 	#define FAN_PIN     6 // Pin for controlling fan via PWM
@@ -20,6 +22,10 @@
 #define encoderPinA   3	// Interrupt pin (coupled with capacitor to GND)
 #define encoderPinB   4 // Interrupt pin (coupled with capacitor to GND)
 #define BUTTON_PIN   12 // Pin for knob button
+
+#ifdef USE_MAGNET_SENSOR
+  #define MAGNET_SENSOR_PIN A3
+#endif
 
 #ifdef PROTOTYPE
 	#define TIMER_MULTIPLIER  8 // if timer has normal (x64) prescaller, then 1
@@ -51,6 +57,9 @@
 double currentTemp=0;
 double setPoint=20;
 double outputVal;
+#ifdef USE_MAGNET_SENSOR
+  int magnetSensorState = 0;
+#endif
 
 int pid_P, pid_I, pid_D; // PID values
 
@@ -86,14 +95,20 @@ void setup() {
 #ifdef PROTOTYPE
 	TCCR0B = (TCCR0B & 0b11111000) | 0x02; // x8 for pin D6
 #else
+  #ifndef USE_SILENCE_FAN
 	// in this case millis() and delay() is not affected
 	TCCR1B = (TCCR1B & 0b11111000) | 0x02; // x8 for pin D9
+  #endif
 #endif
 
-	//Heater Off
-	H_OFF;
-	pinMode(HEATER_PIN, OUTPUT);
-	pinMode(LED_PIN, OUTPUT);
+  //Heater Off
+  H_OFF;
+  pinMode(HEATER_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+
+#ifdef USE_MAGNET_SENSOR
+  pinMode(MAGNET_SENSOR_PIN, INPUT_PULLUP);
+#endif 
 
 	// read PID values from EEPROM
 	restore_settingsEEPROM();
@@ -161,16 +176,26 @@ void loop() {
 
 	fanControl();
 
+#ifdef USE_MAGNET_SENSOR
+  magnetSensorState = digitalRead(MAGNET_SENSOR_PIN);
+  suspendMode = ! magnetSensorState;
+#endif  
+
 	// debug 
-	#ifdef DEBUG
+#ifdef DEBUG
 	if (serial_ms+1000 < mmillis()) {
 		serial_ms = mmillis();
 		Serial.print(F("Set: "));Serial.print(setPoint);
 		Serial.print(F(", Actual: "));Serial.print(currentTemp);
 		Serial.print(F(", PWM: "));Serial.print(outputVal);
-		Serial.print(F(", Fan: "));Serial.println(fanSpeed_actual);
+    Serial.print(F(", Fan: "));Serial.print(fanSpeed_actual);
+
+  #ifdef USE_MAGNET_SENSOR
+    Serial.print(F(", Magnet: "));Serial.print(magnetSensorState);
+  #endif
+    Serial.println("");
 	}	
-	#endif	
+#endif	
 
 }
 
