@@ -2,8 +2,7 @@
 //#define PROTOTYPE	// Prototype version without V1.0 PCB 
 //#define DEBUG
 //#define SUSPEND_LONGPRESS // Enter Cool down (Suspend mode) when encoder long press while in not safe Temp.
-#define USE_MAGNET_SENSOR
-#define USE_SILENCE_FAN
+//#define USE_MAGNET_SENSOR
 
 #ifdef PROTOTYPE
 	#define FAN_PIN     6 // Pin for controlling fan via PWM
@@ -95,10 +94,8 @@ void setup() {
 #ifdef PROTOTYPE
 	TCCR0B = (TCCR0B & 0b11111000) | 0x02; // x8 for pin D6
 #else
-  #ifndef USE_SILENCE_FAN
 	// in this case millis() and delay() is not affected
-	TCCR1B = (TCCR1B & 0b11111000) | 0x02; // x8 for pin D9
-  #endif
+	//TCCR1B = (TCCR1B & 0b11111000) | 0x02; // x8 for pin D9
 #endif
 
   //Heater Off
@@ -177,8 +174,8 @@ void loop() {
 	fanControl();
 
 #ifdef USE_MAGNET_SENSOR
-  magnetSensorState = digitalRead(MAGNET_SENSOR_PIN);
-  suspendMode = ! magnetSensorState;
+	magnetSensorState = digitalRead(MAGNET_SENSOR_PIN);
+	suspendMode = ! magnetSensorState;
 #endif  
 
 	// debug 
@@ -188,7 +185,7 @@ void loop() {
 		Serial.print(F("Set: "));Serial.print(setPoint);
 		Serial.print(F(", Actual: "));Serial.print(currentTemp);
 		Serial.print(F(", PWM: "));Serial.print(outputVal);
-    Serial.print(F(", Fan: "));Serial.print(fanSpeed_actual);
+		Serial.print(F(", Fan: "));Serial.print(fanSpeed_actual);
 
   #ifdef USE_MAGNET_SENSOR
     Serial.print(F(", Magnet: "));Serial.print(magnetSensorState);
