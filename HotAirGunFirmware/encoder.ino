@@ -47,14 +47,13 @@ bool is_rotaryEncLongPress() {
 	 return false;
 }
 */
-
 void waitUntilButtonReleased(){
 	// wait until button is depressed
+#ifdef SUSPEND_LONGPRESS
 	int delaycounter=0;
 	while(rotaryEncRead() == 127){
 		if(SafeTemp < airTemp || suspendMode){
 			WDT_Init();
-#ifdef SUSPEND_LONGPRESS
 			mdelay(50);
 			delaycounter++;
 			if(delaycounter>30){
@@ -68,8 +67,15 @@ void waitUntilButtonReleased(){
 				}
 				while(rotaryEncRead() == 127){WDT_Init();}
 			}
-#endif			
+			
 		}
 	} // keep system alive
-	mdelay(50); // wait for noise is gone from button contacts
+#else
+	while(rotaryEncRead() == 127){
+		if(SafeTemp < airTemp){
+			WDT_Init();
+		}
+	}
+#endif
+mdelay(50); // wait for noise is gone from button contacts
 }
