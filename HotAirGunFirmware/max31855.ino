@@ -1,6 +1,5 @@
 #define filterSamples   9
 uint16_t TSmoothArray[filterSamples];
-unsigned long max31855_ms = mmillis();
 
 void MAX31855_init(void) {
 	digitalWrite(MAXCS_PIN,LOW);
@@ -18,17 +17,17 @@ int readMAX31855(void) {
   uint16_t d = 0;
 
 	pinMode(MAXCS_PIN, OUTPUT); // pin to low
-	delay(1);
+	delayMicroseconds(100);
 	pinMode(MAXSCK_PIN, OUTPUT); // pin to low 
-	delay(1);
+	delayMicroseconds(100);
 	// we need only 12 bytes of data. It is no sense with thermocouple to have .00 precision.
 	for (byte i=0; i<12; i++) {
 		pinMode(MAXSCK_PIN, OUTPUT); // pin to low 
-		delay(1);
+		delayMicroseconds(100);
 		d <<= 1;
 		if (digitalRead(MAXDO_PIN)){d |= 1;}
 		pinMode(MAXSCK_PIN, INPUT); // pin to high 
-		delay(1);
+		delayMicroseconds(100);
 	}
 	pinMode(MAXCS_PIN, INPUT); // pin to high
 	return digitalSmooth((d>1400 ? 0 : d), TSmoothArray); // higher than 1400 means negative temperature
@@ -76,8 +75,6 @@ int digitalSmooth(uint16_t rawIn, uint16_t *sensSmoothArray){     // "int *sensS
 }
 
 void getTemperature(){
-	if(max31855_ms+80 < mmillis()) {
-		max31855_ms = mmillis();
 		airTemp = readMAX31855();
 	}
 }
