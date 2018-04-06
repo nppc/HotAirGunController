@@ -1,6 +1,6 @@
 # HotAirGunController
 Controller for Hot Air Gun with 220v heater and 24v fan
-![PCB 3D](PCB3D.jpg)
+![PCB 3D](Images/PCB3D.jpg)
 
 ## Workable PIDs
 P: 60
