@@ -18,3 +18,4 @@ I: 3
 
 D: 30
 
+![Connections](Images/HotAirGunConnections.jpg)
