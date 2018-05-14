@@ -22,3 +22,13 @@ Display | OLED 128x32 with I2c | | Ebay, Aliexpress or Banggood
 SSD | CPC1998 | i4-PAC | 849-CPC1998J
 
 Please note, SSD relay is not mounted on PCB. It should be connected with wires to the Heat- Heat+ pins (behind rotary encoder).
+
+You also need to have 24v power supply for ventilator. Something like this: https://www.aliexpress.com/item/Mini-Size-DC-24V-Power-Supply-Switching-Lighting-Driver-Transformer-100-240V-AC-to-DC24V-SMPS/32818299879.html
+
+![AC/DC 24V](Images/AC-DC_24V-0.63A.jpg)
+
+
+And for powering Arduino you will need DC/DC converter. Something like this:
+https://www.aliexpress.com/item/Free-Shipping-1PCS-XM1584-Ultra-small-size-DC-DC-step-down-power-supply-module-3A-adjustable/32251969850.html
+
+![MP1584EN](Images/mp1584.jpg)
