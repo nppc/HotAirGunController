@@ -3,7 +3,8 @@
 You can use Hot Air Desoldering Gun Handle FOR 858 858D 898D 852D Soldering Station
 Hot-air Rework Station
 ![HotAirGunHandle](Images/HotAirDesolderingGunHandle.jpg)
-
+And OLED 128x32 pixels
+![Oled](Images/OLED.png)
 
 ![PCB 3D](Images/PCB3D.jpg)
 
