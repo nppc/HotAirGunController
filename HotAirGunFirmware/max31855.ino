@@ -77,4 +77,4 @@ int digitalSmooth(uint16_t rawIn, uint16_t *sensSmoothArray){     // "int *sensS
 void getTemperature(){
 		airTemp = readMAX31855();
 	}
-}
+ 
